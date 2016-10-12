@@ -1,11 +1,10 @@
 {
   "name": "fab.js",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "React static HTML generator",
   "author": "estrattonbailey",
   "license": "MIT",
-  "scripts": {
-  },
+  "scripts": {},
   "bin": {
     "fab": "./bin/cli.js"
   },
