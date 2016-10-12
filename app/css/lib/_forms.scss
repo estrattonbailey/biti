@@ -1,0 +1,23 @@
+form {
+  margin: 0;
+}
+input,
+select,
+textarea {
+  outline: 0;
+  border: 0;
+}
+label,
+input,
+select {
+  position: relative;
+}
+input[type="text"],
+input[type="email"],
+input[type="search"],
+input[type="tel"],
+input[type="password"],
+select, {
+	padding: .35em .65em;
+  outline: 0;
+}

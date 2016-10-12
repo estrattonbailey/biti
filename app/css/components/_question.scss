@@ -1,0 +1,18 @@
+.question-outer {
+  min-height: 100vh;
+}
+
+.question {
+
+  button {
+    margin: 0 0.5em 0.5em 0;
+    text-align: left;
+    padding: 0.2em 0.5em 0.3em;
+    border: 4px solid currentColor;
+
+    &:focus {
+      color: $cb !important;
+      outline: 0;
+    }
+  }
+}

@@ -1,0 +1,16 @@
+.gif {
+  background-color: white;
+  transition: opacity 200ms ease-in-out;
+  opacity: 0;
+  cursor: crosshair;
+
+  &.is-active {
+    opacity: 1;
+  }
+
+  img {
+    min-width: 100%;
+    min-height: 100%;
+    margin: auto;
+  } 
+}

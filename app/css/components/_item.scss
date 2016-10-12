@@ -1,0 +1,26 @@
+.item {
+  a {
+    font-weight: 600;
+    text-decoration: none;
+  }
+}
+.item__image {
+  width: 100%;
+  overflow: hidden;
+  padding-top: 20%;
+
+  @media (min-width: 48em){
+    width: 33.33333%;
+  }
+
+  img {
+    object-fit: cover;
+    height: 100%;
+  }
+}
+.item__info {
+  @media (min-width: 48em){
+    width: 66.66666%;
+    padding-left: 2em;
+  }
+}

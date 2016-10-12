@@ -1,0 +1,23 @@
+// SPACING
+.mla, .mha { margin-left: auto }
+.mra, .mha { margin-right: auto }
+.mta, .mva { margin-top: auto }
+.mba, .mva { margin-bottom: auto; }
+
+$intervals: (
+  '0': 0,
+  '05': 0.5,
+  1: 1,
+  2: 2
+);
+
+@each $key, $interval in $intervals {
+  .mt#{$key}, .mv#{$key}, .mx#{$key} { margin-top:($interval + em) }
+  .mb#{$key}, .mv#{$key}, .mx#{$key} { margin-bottom:($interval + em) }
+  .ml#{$key}, .mh#{$key}, .mx#{$key} { margin-left:($interval + em) }
+  .mr#{$key}, .mh#{$key}, .mx#{$key} { margin-right:($interval + em) }
+  .pt#{$key}, .pv#{$key}, .px#{$key} { padding-top:($interval + em) }
+  .pb#{$key}, .pv#{$key}, .px#{$key} { padding-bottom:($interval + em) }
+  .pl#{$key}, .ph#{$key}, .px#{$key} { padding-left:($interval + em) }
+  .pr#{$key}, .ph#{$key}, .px#{$key} { padding-right:($interval + em) }
+}

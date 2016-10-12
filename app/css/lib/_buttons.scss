@@ -1,0 +1,25 @@
+button {
+  -webkit-appearance: none;
+  border: 0;
+  border-radius: 0;
+  background-color: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+button[disabled], 
+input[disabled] { 
+  cursor: default 
+}
+button.button,
+.button,
+a[role="button"],
+.button[role="button"],
+input[type="submit"].button {
+  display: block;
+  background-color: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0.7em 2em;
+  text-decoration: none;
+  text-align: center;
+}
