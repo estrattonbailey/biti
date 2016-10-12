@@ -44,8 +44,8 @@ export const renderPages = () => state.pages.forEach(render)
 
 export default {
   pages: pages => state.pages = [state.pages, ...pages],
-  dest: dest => state.dest = dest
+  dest: dest => state.dest = dest,
+  renderPages
 }
 
 module.exports = exports
-

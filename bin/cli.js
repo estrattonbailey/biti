@@ -15,7 +15,7 @@ const path = require('path')
 const mkdirp = require('mkdirp')
 const fs = require('fs')
 const program = require('commander')
-const { default: fab, renderPages } = require('./fab.js')
+const { default: fab } = require('./fab.js')
 
 const dir = process.cwd()
 
@@ -33,4 +33,4 @@ config = config.default ? config.default : config
 fab.dest(program.outDir)
 fab.pages(config.pages)
 
-renderPages()
+fab.renderPages()
