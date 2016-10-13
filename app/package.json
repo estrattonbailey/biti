@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "parallelshell 'npm run js:dev' 'npm run css:dev'",
-    "render": "",
+    "render": "node render.js",
     "js:build": "browserify src/js/index.js -p [minifyify --no-map] > site/index.js",
     "js:dev": "watchify src/js/index.js -v -d -o site/index.js",
     "css:build": "node-sass src/scss/main.scss | postcss -u autoprefixer > site/style.css",
