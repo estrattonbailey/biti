@@ -17,7 +17,8 @@ const dir = process.cwd()
 
 const state = {
   dest: 'site/',
-  pages: []
+  pages: [],
+  data: {}
 }
 
 const write = (loc, content) => {
@@ -34,14 +35,16 @@ const render = p => {
   let template = p.template 
   let loc = path.join(route, 'index.html')
 
-  let locals = p.locals || {}
+  let props = Object.assign({}, state.data, {
+    locals: p.locals || {}
+  })
 
   if (!template) { return console.error('No component found at', loc) }
 
   if (template.default) { template = template.default }
 
   content = `<!DOCTYPE html>${ReactDOMServer.renderToStaticMarkup(
-    React.createElement(template, locals)
+    React.createElement(template, props)
   )}`
 
   write(loc, content)
@@ -55,6 +58,7 @@ const addPages = pages => state.pages = [...state.pages, ...(
 
 module.exports = {
   dest: dest => state.dest = dest,
+  data: data => state.data = Object.assign({}, state.data, data),
   pages: addPages,
   renderPages
 }
