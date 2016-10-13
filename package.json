@@ -5,6 +5,7 @@
   "author": "estrattonbailey",
   "license": "MIT",
   "scripts": {},
+  "main": "./bin/fab.js",
   "bin": {
     "fab": "./bin/cli.js"
   },
