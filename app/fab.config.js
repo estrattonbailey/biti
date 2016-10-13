@@ -1,4 +1,5 @@
-export default {
+module.exports = {
+  dest: './site',
   pages: [
     {
       template: require('./markup/templates/Root.js'), 

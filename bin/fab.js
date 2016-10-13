@@ -1,10 +1,17 @@
 'use strict';
 
-import React from 'react'
-import ReactDOMServer from 'react-dom/server'
-import path from 'path'
-import mkdirp from 'mkdirp'
-import fs from 'fs'
+require('babel-register')({
+  presets: [
+    'es2015',
+    'react'
+  ]
+})
+
+const React = require('react')
+const ReactDOMServer = require('react-dom/server')
+const path = require('path')
+const fs = require('fs')
+const mkdirp = require('mkdirp')
 
 const dir = process.cwd()
 
@@ -23,9 +30,9 @@ const write = (loc, content) => {
 
 const render = p => {
   let content
-  let route = path.join(state.dest, p.path || '/')
+  let route = path.join(state.dest, p.route || '/')
   let template = p.template 
-  let loc = path.join(state.dest, 'index.html')
+  let loc = path.join(route, 'index.html')
 
   let locals = p.locals || {}
 
@@ -40,12 +47,14 @@ const render = p => {
   write(loc, content)
 }
 
-export const renderPages = () => state.pages.forEach(render)
+const renderPages = () => state.pages.forEach(render)
 
-export default {
-  pages: pages => state.pages = [state.pages, ...pages],
+const addPages = pages => state.pages = [...state.pages, ...(
+  Array.isArray(pages) ? pages : [pages]
+)]
+
+module.exports = {
   dest: dest => state.dest = dest,
+  pages: addPages,
   renderPages
 }
-
-module.exports = exports

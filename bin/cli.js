@@ -15,22 +15,22 @@ const path = require('path')
 const mkdirp = require('mkdirp')
 const fs = require('fs')
 const program = require('commander')
-const { default: fab } = require('./fab.js')
+const fab = require('./fab.js')
 
 const dir = process.cwd()
 
 program
   .version('0.0.1')
   .option('-c, --config [config]', 'Config file')
-  .option('-o, --out-dir [config]', 'Destination')
+  .option('-o, --output [config]', 'Destination')
   .parse(process.argv)
 
-let config = require(path.join(dir, program.config || 'config.js'))
+  let config = require(path.join(dir, program.config || './fab.config.js'))
 const props = program.props ? require(path.join(dir, program.props)) : {}
 
 config = config.default ? config.default : config
 
-fab.dest(program.outDir)
+fab.dest(program.output)
 fab.pages(config.pages)
 
 fab.renderPages()

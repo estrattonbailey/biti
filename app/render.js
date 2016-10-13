@@ -1,14 +1,10 @@
-require('babel-register')({
-  presets: [
-    'es2015',
-    'react'
-  ]
-})
+const path = require('path')
+const fab = require('../bin/fab')
+const config = require('./fab.config.js')
 
-const { default: fab } = require('../bin/fab')
-const { default: config } = require('./fab.config.js')
+const dir = process.cwd()
 
-fab.dest('./site')
+fab.dest(config.dest ? path.join(dir, config.dest) : './site')
 fab.pages(config.pages)
 
 fab.renderPages()
