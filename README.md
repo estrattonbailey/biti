@@ -43,8 +43,13 @@ fab
 Via the API, you can manually add pages to a collection, and render them all as you wish.
 ```javascript
 const fab = require('fab.js')
+const data = require('./data.js')
 
+// specify site output dir
 fab.dest('./path/to/site')
+
+// add data as global props
+fab.data(data)
 
 // add an array of pages
 fab.pages([
@@ -62,6 +67,15 @@ fab.pages([
 fab.pages({
   template: require('./path/to/Component.js'),
   route: 'contact'
+})
+
+// generate pages from JSON (blog posts, for example)
+data.pages.forEach(p => {
+  fab.pages({
+    template: require('./path/to/Component.js'),
+    route: p.url,
+    locals: p.content
+  })
 })
 
 fab.renderPages() // render to dest path
