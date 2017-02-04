@@ -6,10 +6,11 @@ const fs = require('fs')
 const path = require('path')
 const program = require('commander')
 const colors = require('colors')
+const pkg = require('./package.json')
 const dir = process.cwd()
 
 program
-  .version('0.0.1')
+  .version(pkg.version)
   .option('-c, --config [config]', 'Config file')
   .option('-o, --output [config]', 'Destination')
   .parse(process.argv)
@@ -21,7 +22,9 @@ require('babel-register')(config.babel)
 
 const fab = require('./index.js')
 
-fab.dest(program.output)
+fab.dest(config.output || program.output)
 fab.pages(config.pages)
+
+console.log(`fab - v${pkg.version}`.rainbow)
 
 fab.renderPages()

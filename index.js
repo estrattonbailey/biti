@@ -40,7 +40,7 @@ function write(loc, content) {
     err ? (
       console.log('fab writing:'.underline.red, err)
     ) : (
-      console.log('fab - writing:'.rainbow, loc)
+      console.log('fab - writing:'.green, loc)
     )
   })
 }
