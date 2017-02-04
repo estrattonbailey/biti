@@ -6,6 +6,7 @@ const detective = require('detective-es6')
 const React = require('react')
 const ReactDOMServer = require('react-dom/server')
 const mkdirp = require('mkdirp')
+const colors = require('colors')
 const dir = process.cwd()
 
 const state = {
@@ -14,24 +15,33 @@ const state = {
   data: {}
 }
 
-const getComponentDeps = pages => pages.map(p => {
-  const content = fs.readFileSync(p.template, 'utf8')
-  const components = detective(content).filter(c => {
-    return /\.|\//.test(c)
-  })
-  return p.components = components
-})
+function getComponentDeps(pages) {
+  return pages.map(p => {
+    const content = fs.readFileSync(p.template, 'utf8')
+    const components = detective(content).filter(c => {
+      return /\.|\//.test(c)
+    })
 
-const addPages = pages => state.pages = [
-  ...state.pages, 
-  ...pages
-]
+    return p.components = components
+  })
+}
+
+function addPages(pages) {
+  state.pages = [
+    ...state.pages, 
+    ...pages
+  ]
+}
 
 function write(loc, content) {
   mkdirp(path.dirname(loc))
 
   fs.writeFile(loc, content, (err) => {
-    err ? console.log('error:', err) : console.log('writing:', loc)
+    err ? (
+      console.log('fab writing:'.underline.red, err)
+    ) : (
+      console.log('fab - writing:'.rainbow, loc)
+    )
   })
 }
 
@@ -48,8 +58,6 @@ function render(p) {
 
   template = template.default || template
 
-  console.log(template)
-
   const content = `<!DOCTYPE html>${ReactDOMServer.renderToStaticMarkup(
     React.createElement(template, props)
   )}`
@@ -62,7 +70,5 @@ module.exports = {
   data: data => data ? state.data = Object.assign({}, state.data, data) : state.data,
   pages: pages => pages ? addPages(pages) : state.pages,
   getState: () => state,
-  renderPages: function() {
-    state.pages.forEach(render)
-  },
+  renderPages: () => state.pages.forEach(render),
 }
