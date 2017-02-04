@@ -2,21 +2,10 @@
 
 'use strict';
 
-require('babel-register')({
-  presets: [
-    'es2015',
-    'react'
-  ]
-})
-
-const React = require('react')
-const ReactDOMServer = require('react-dom/server')
-const path = require('path')
-const mkdirp = require('mkdirp')
 const fs = require('fs')
+const path = require('path')
 const program = require('commander')
-const fab = require('./fab.js')
-
+const colors = require('colors')
 const dir = process.cwd()
 
 program
@@ -25,10 +14,12 @@ program
   .option('-o, --output [config]', 'Destination')
   .parse(process.argv)
 
-  let config = require(path.join(dir, program.config || './fab.config.js'))
+const config = require(path.join(dir, program.config || './fab.config.js'))
 const props = program.props ? require(path.join(dir, program.props)) : {}
 
-config = config.default ? config.default : config
+require('babel-register')(config.babel)
+
+const fab = require('./index.js')
 
 fab.dest(program.output)
 fab.pages(config.pages)
