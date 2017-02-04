@@ -48,6 +48,8 @@ function render(p) {
 
   template = template.default || template
 
+  console.log(template)
+
   const content = `<!DOCTYPE html>${ReactDOMServer.renderToStaticMarkup(
     React.createElement(template, props)
   )}`
