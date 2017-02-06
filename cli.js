@@ -23,7 +23,7 @@ require('babel-register')(config.babel)
 const fab = require('./index.js')
 
 fab.data(config.data || {})
-fab.dest(config.output || program.output)
+fab.output(config.output || program.output)
 fab.pages(config.pages)
 
 console.log(`fab - v${pkg.version}`.rainbow)

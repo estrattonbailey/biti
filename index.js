@@ -10,7 +10,7 @@ const colors = require('colors')
 const dir = process.cwd()
 
 const state = {
-  dest: 'site/',
+  output: 'site/',
   pages: [],
   data: {}
 }
@@ -46,7 +46,7 @@ function write(loc, content) {
 }
 
 function render(p) {
-  let route = path.join(state.dest, p.route || '/')
+  let route = path.join(state.output, p.route || '/')
   let template = require(path.join(dir, p.template))
   let loc = path.join(route, 'index.html')
 
@@ -66,9 +66,9 @@ function render(p) {
 }
 
 module.exports = {
-  dest: dest => dest ? state.dest = dest : state.dest,
+  output: output => output ? state.output = output : state.output,
   data: data => data ? state.data = Object.assign({}, state.data, data) : state.data,
   pages: pages => pages ? addPages(pages) : state.pages,
   getState: () => state,
-  renderPages: () => state.pages.forEach(render),
+  render: () => state.pages.forEach(render),
 }
