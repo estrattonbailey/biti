@@ -34,14 +34,18 @@ function addPages(pages) {
 }
 
 function write(loc, content) {
-  mkdirp(path.dirname(loc))
+  const dir = path.dirname(loc)
 
-  fs.writeFile(loc, content, (err) => {
-    err ? (
-      console.log('fab writing:'.underline.red, err)
-    ) : (
-      console.log('fab - writing:'.green, loc)
-    )
+  mkdirp(dir, err => {
+    if (err) return console.log(err.red)
+
+    fs.writeFile(loc, content, err => {
+      err ? (
+        console.log('fab - error:'.underline.red, err)
+      ) : (
+        console.log('fab - writing:'.green, loc)
+      )
+    })
   })
 }
 
