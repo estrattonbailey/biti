@@ -28,4 +28,4 @@ fab.pages(config.pages)
 
 console.log(`fab - v${pkg.version}`.rainbow)
 
-fab.renderPages()
+fab.render()
