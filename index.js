@@ -25,7 +25,7 @@ function write(loc, content) {
   const dir = path.dirname(loc)
 
   fs.emptyDir(dir, err => {
-    console.log(err.red)
+    if (err) console.log(err.red)
   })
 
   fs.mkdirp(dir, err => {
