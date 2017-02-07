@@ -1,11 +1,10 @@
 'use strict';
 
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 const detective = require('detective-es6')
 const React = require('react')
 const ReactDOMServer = require('react-dom/server')
-const mkdirp = require('mkdirp')
 const colors = require('colors')
 const dir = process.cwd()
 
@@ -13,17 +12,6 @@ const state = {
   output: 'site/',
   pages: [],
   data: {}
-}
-
-function getComponentDeps(pages) {
-  return pages.map(p => {
-    const content = fs.readFileSync(p.template, 'utf8')
-    const components = detective(content).filter(c => {
-      return /\.|\//.test(c)
-    })
-
-    return p.components = components
-  })
 }
 
 function addPages(pages) {
@@ -36,12 +24,16 @@ function addPages(pages) {
 function write(loc, content) {
   const dir = path.dirname(loc)
 
-  mkdirp(dir, err => {
+  fs.emptyDir(dir, err => {
+    console.log(err.red)
+  })
+
+  fs.mkdirp(dir, err => {
     if (err) return console.log(err.red)
 
     fs.writeFile(loc, content, err => {
       err ? (
-        console.log('fab - error:'.underline.red, err)
+        console.log('fab - error:'.red, err)
       ) : (
         console.log('fab - writing:'.green, loc)
       )
