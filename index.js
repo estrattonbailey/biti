@@ -24,10 +24,6 @@ function addPages(pages) {
 function write(loc, content) {
   const dir = path.dirname(loc)
 
-  fs.emptyDir(dir, err => {
-    if (err) console.log(err.red)
-  })
-
   fs.mkdirp(dir, err => {
     if (err) return console.log(err.red)
 
