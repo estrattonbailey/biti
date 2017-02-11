@@ -19,7 +19,7 @@ const addPages = pages => {
     route: path.join(state.output, page.route || '/')
   }))
 
-  state.pages = [ ...state.pages, ...pages ]
+  state.pages.push(pages)
 }
 
 const write = (loc, content) => {
