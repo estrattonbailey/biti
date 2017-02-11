@@ -9,17 +9,19 @@ const { log, error } = require('./util.js')
 const state = {
   config: {},
   output: 'site/',
-  pages: {},
+  pages: [],
   data: {}
 }
 
-const addPages = pages => {
-  pages = pages.map(page => Object.assign(page, {
-    template: path.join(process.cwd(), page.template),
-    route: path.join(state.output, page.route || '/')
-  }))
+const resolvePage = page => Object.assign(page, {
+  template: path.join(process.cwd(), page.template),
+  route: path.join(state.output, page.route || '/')
+})
 
-  state.pages.push(pages)
+const addPages = pages => {
+  pages = Array.isArray(page) ? pages.map(resolvePage) : resolvePage(pages)
+
+  state.pages = state.pages.concat(pages)
 }
 
 const write = (loc, content) => {
