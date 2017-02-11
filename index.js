@@ -14,8 +14,7 @@ const state = {
 }
 
 const addPages = pages => {
-  pages = pages.map(page => ({
-    ...page,
+  pages = pages.map(page => Object.assign(page, {
     template: path.join(process.cwd(), page.template),
     route: path.join(state.output, page.route || '/')
   }))
