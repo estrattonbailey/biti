@@ -199,7 +199,7 @@ data.posts.forEach(post => {
 ```
 
 #### render
-To render all pages in the store, just run `fab.render()`. Using the CLI runs this automatically.
+To render all pages in the store, just run `fab.render()`. Otherwise, pass a page, or array of pages.
 ```javascript
 fab.output('/public')
 
@@ -212,6 +212,17 @@ fab.pages({
 })
 
 fab.render()
+
+// render single page
+const page = {
+  template: 'path/to/Home.js',
+  route: '/',
+  locals: {
+    title: 'My Awesome Static Site'
+  }
+}
+
+fab.render(page)
 ```
 
 #### transpilation
