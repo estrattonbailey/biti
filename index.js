@@ -2,65 +2,70 @@
 
 const fs = require('fs-extra')
 const path = require('path')
-const detective = require('detective-es6')
 const React = require('react')
 const ReactDOMServer = require('react-dom/server')
-const colors = require('colors')
-const dir = process.cwd()
+const { log, error } = require('./util.js')
 
 const state = {
+  config: {},
   output: 'site/',
-  pages: [],
+  pages: {},
   data: {}
 }
 
-function addPages(pages) {
-  state.pages = [
-    ...state.pages, 
-    ...pages
-  ]
+const addPages = pages => {
+  pages = pages.map(page => ({
+    ...page,
+    template: path.join(process.cwd(), page.template),
+    route: path.join(state.output, page.route || '/')
+  }))
+
+  state.pages = [ ...state.pages, ...pages ]
 }
 
-function write(loc, content) {
+const write = (loc, content) => {
   const dir = path.dirname(loc)
 
   fs.mkdirp(dir, err => {
-    if (err) return console.log(err.red)
+    if (err) return error(err)
 
     fs.writeFile(loc, content, err => {
-      err ? (
-        console.log('fab - error:'.red, err)
-      ) : (
-        console.log('fab - writing:'.green, loc)
-      )
+      if (err) return error(err)
+      log(`writing ${loc}`)
     })
   })
 }
 
-function render(p) {
-  let route = path.join(state.output, p.route || '/')
-  let template = require(path.join(dir, p.template))
-  let loc = path.join(route, 'index.html')
+const render = page => {
+  let template = require(page.template)
+  let loc = path.join(page.route, 'index.html')
 
   let props = Object.assign({}, state.data, {
-    locals: p.locals || {}
+    locals: page.locals || {}
   })
-
-  if (!template) { return console.error('No component found at', loc) }
 
   template = template.default || template
 
-  const content = `<!DOCTYPE html>${ReactDOMServer.renderToStaticMarkup(
-    React.createElement(template, props)
-  )}`
+  const content = `<!DOCTYPE html>${ReactDOMServer.renderToStaticMarkup(React.createElement(template, props))}`
 
   write(loc, content)
 }
 
 module.exports = {
+  config: c => c ? state.config = c : state.config,
+  getState: () => state,
   output: output => output ? state.output = output : state.output,
   data: data => data ? state.data = Object.assign({}, state.data, data) : state.data,
   pages: pages => pages ? addPages(pages) : state.pages,
-  getState: () => state,
-  render: () => state.pages.forEach(render),
+  render: pages => {
+    pages ? (
+      Array.isArray(pages) ? (
+        pages.forEach(render)
+      ) : (
+        render(pages)
+      )
+    ) : (
+      state.pages.forEach(render)
+    )
+  },
 }
