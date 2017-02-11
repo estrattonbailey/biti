@@ -19,9 +19,11 @@ const resolvePage = page => Object.assign(page, {
 })
 
 const addPages = pages => {
-  pages = Array.isArray(page) ? pages.map(resolvePage) : resolvePage(pages)
-
-  state.pages = state.pages.concat(pages)
+  if (Array.isArray(pages)) {
+    state.pages = state.pages.concat(pages.map(resolvePage))
+  } else {
+    state.pages.push(resolvePage(pages))
+  }
 }
 
 const write = (loc, content) => {
