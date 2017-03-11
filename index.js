@@ -32,7 +32,7 @@ const write = (loc, content) => {
   fs.mkdirp(dir, err => {
     if (err) return error(err)
 
-    fs.writeFile(loc, content, err => {
+    fs.writeFile(loc, content, { flag: 'w' }, err => {
       if (err) return error(err)
       log(`writing ${loc}`)
     })
