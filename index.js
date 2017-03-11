@@ -6,11 +6,19 @@ const React = require('react')
 const ReactDOMServer = require('react-dom/server')
 const { log, error } = require('./util.js')
 
+require('babel-register')({
+  presets: [
+    'es2015',
+    'react',
+  ]
+})
+
 const state = {
   config: {},
   output: 'site/',
   pages: [],
-  data: {}
+  data: {},
+  babel: {}
 }
 
 const resolvePage = page => Object.assign(page, {
