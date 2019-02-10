@@ -1,47 +1,64 @@
 #!/usr/bin/env node
-
 'use strict';
 
 const fs = require('fs')
 const path = require('path')
-const program = require('commander')
-const colors = require('colors')
-const chokidar = require('chokidar')
-const unique = require('array-unique')
-const { info } = require('./util')
+const write = require('log-update')
+const exit = require('exit')
 const pkg = require('./package.json')
-const dir = process.cwd()
+const req = require('./lib/require.js')
 
-program
+const cwd = process.cwd()
+
+const prog = require('commander')
   .version(pkg.version)
-  .option('-c, --config [config]', 'config file')
-  .option('-w, --watch [watch]', 'watched dir')
+  .option('-c, --config <config>', 'path to config file, default: fab.config.js')
   .parse(process.argv)
 
-const configPath = path.join(dir, program.config || './fab.config.js')
-const config = require(configPath)
+require('./lib/babel.js')(
+  req(
+    path.resolve(cwd, (prog.config || './fab.config.js'))
+  ).mod
+)
 
-require('babel-register')(config.babel)
+const watch = require('./lib/watch.js')
+const render = require('./lib/render.js')
 
-const fab = require('./index.js')
+const log = require('./lib/logger.js')('fab')
 
-fab.config = config
-fab.data(config.data || {})
-fab.output(config.output)
-fab.pages(config.pages)
+prog
+  .command('build <src> <dest>')
+  .action((src, dest) => {
+    log.info('building', `${src} to ${dest}`)
 
-info(`fab - v${pkg.version}`)
+    render(
+      path.join(cwd, src),
+      path.join(cwd, dest)
+    )
+  })
 
-fab.render()
+prog
+  .command('watch <src> <dest>')
+  .action(async (src, dest) => {
+    const _src = path.join(cwd, src)
+    const _dest = path.join(cwd, dest)
 
-if (program.watch) {
-  const watch = chokidar.watch(
-    unique([
-      ...fab.pages().map(p => path.dirname(p.template)),
-      program.watch || null,
-      configPath
-    ])
-  )
+    // initial render
+    await render(_src, _dest)
 
-  watch.on('change', path => fab.render(fab.pages()))
+    log.info('watching', src)
+
+    watch(_src)
+      .on('change', pages => {
+        render(_src, _dest, pages)
+      })
+  })
+
+if (!process.argv.slice(2).length) {
+  prog.outputHelp(txt => {
+    console.log(txt)
+    exit()
+  })
+} else {
+  prog.parse(process.argv)
 }

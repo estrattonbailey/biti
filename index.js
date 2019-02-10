@@ -1,82 +1,101 @@
-'use strict';
-
+/**
+ * WIP
+ */
 const fs = require('fs-extra')
 const path = require('path')
 const React = require('react')
 const ReactDOMServer = require('react-dom/server')
-const { log, error } = require('./util.js')
+const getModule = require('which-module')
+const watch = require('./lib/watch.js')
+const log = require('./lib/logger.js')
 
-require('babel-register')({
+require('@babel/register')({
+  plugins: [
+    require.resolve('@babel/plugin-syntax-object-rest-spread'),
+    require.resolve('@babel/plugin-proposal-class-properties'),
+    require.resolve('fast-async')
+  ],
   presets: [
-    'es2015',
-    'react',
+    [require.resolve('@babel/preset-env'), {
+      targets: {
+        ie: '11'
+      }
+    }],
+    require.resolve('@babel/preset-react')
   ]
 })
 
 const state = {
-  config: {},
   output: 'site/',
   pages: [],
   data: {},
   babel: {}
 }
 
-const resolvePage = page => Object.assign(page, {
-  template: path.join(process.cwd(), page.template),
-  route: path.join(state.output, page.route || '/')
-})
+const render = page => {
+  const view = page.view.default
+  const data = Object.assign({}, state.data, page.data)
+  const content = `
+    <!DOCTYPE html>
+    ${ReactDOMServer.renderToString(view(data))}
+  `
 
-const addPages = pages => {
-  if (Array.isArray(pages)) {
-    state.pages = state.pages.concat(pages.map(resolvePage))
-  } else {
-    state.pages.push(resolvePage(pages))
-  }
-}
-
-const write = (loc, content) => {
-  const dir = path.dirname(loc)
+  const file = path.join(process.cwd(), state.output, page.path, 'index.html')
+  const dir = path.dirname(file)
 
   fs.mkdirp(dir, err => {
-    if (err) return error(err)
+    if (err) return log('error', err)
 
-    fs.writeFile(loc, content, { flag: 'w' }, err => {
-      if (err) return error(err)
-      log(`writing ${loc}`)
+    fs.writeFile(file, content, { flag: 'w' }, err => {
+      if (err) return log('error', err)
+      log(`rendering ${dir}`)
     })
   })
 }
 
-const render = page => {
-  let template = require(page.template)
-  let loc = path.join(page.route, 'index.html')
-
-  let props = Object.assign({}, state.data, {
-    locals: page.locals || {}
-  })
-
-  template = template.default || template
-
-  const content = `<!DOCTYPE html>${ReactDOMServer.renderToStaticMarkup(React.createElement(template, props))}`
-
-  write(loc, content)
-}
-
 module.exports = {
-  config: c => c ? state.config = c : state.config,
-  getState: () => state,
-  output: output => output ? state.output = output : state.output,
-  data: data => data ? state.data = Object.assign({}, state.data, data) : state.data,
-  pages: pages => pages ? addPages(pages) : state.pages,
-  render: pages => {
-    pages ? (
-      Array.isArray(pages) ? (
-        pages.forEach(render)
-      ) : (
-        render(pages)
-      )
-    ) : (
-      state.pages.forEach(render)
-    )
+  get state () {
+    return state
   },
+  out (o) {
+    if (o) state.output = o
+    return state.output
+  },
+  data (d) {
+    if (d) state.data = Object.assign({}, state.data, d)
+    return state.data
+  },
+  pages (p) {
+    if (p) state.pages = state.pages.concat(p)
+    state.pages = state.pages.map(page => {
+      return Object.assign(page, {
+        id: getModule(page.view).id
+      })
+    })
+    return state.pages
+  },
+  watch (dir) {
+    log('watching', dir)
+
+    watch(dir, (changed, pages) => {
+      delete require.cache[require.resolve(changed)]
+
+      pages.map(page => {
+        for (const p of this.state.pages) {
+          if (p.id === page) {
+            delete require.cache[require.resolve(page)]
+            p.view = require(page)
+            render(p)
+          }
+        }
+      })
+    })
+  },
+  render (p) {
+    !!p ? (
+      [].concat(p).map(render)
+    ) : (
+      state.pages.map(render)
+    )
+  }
 }
