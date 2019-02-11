@@ -15,11 +15,11 @@ const prog = require('commander')
   .option('-c, --config <config>', 'path to config file, default: fab.config.js')
   .parse(process.argv)
 
-require('./lib/babel.js')(
-  req(
-    path.resolve(cwd, (prog.config || './fab.config.js'))
-  ).mod
+const { mod: config } = req(
+  path.resolve(cwd, (prog.config || './fab.config.js'))
 )
+
+require('./lib/env.js')(config)
 
 const watch = require('./lib/watch.js')
 const render = require('./lib/render.js')
