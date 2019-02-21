@@ -1,10 +1,9 @@
-# fab
-Tiny flexible CLI for rendering React components to static templates, with
-support for pagination.
+# biti
+The React static site generator.
 
 ## Install
 ```bash
-npm i fab.js --g
+npm i biti --g
 ```
 
 ## Usage
@@ -43,11 +42,11 @@ export function view (props) {
 ```
 Then, to build all templates in `pages/` to a new `static/` dir:
 ```bash
-fab build pages/ static/
+biti render pages/ static/
 ```
 Or to watch for file changes during dev:
 ```bash
-fab watch pages/ static/
+biti watch pages/ static/
 ```
 
 ### Pagination

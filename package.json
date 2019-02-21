@@ -1,13 +1,13 @@
 {
-  "name": "fab.js",
+  "name": "biti",
   "version": "1.0.0-3",
-  "description": "React static HTML generator",
+  "description": "The React static site generator",
   "author": "estrattonbailey",
   "license": "MIT",
   "scripts": {},
   "main": "index.js",
   "bin": {
-    "fab": "cli.js"
+    "biti": "cli.js"
   },
   "dependencies": {
     "@babel/core": "^7.2.2",
@@ -26,18 +26,20 @@
     "log-update": "^2.3.0",
     "merge-deep": "^3.0.2",
     "module-alias": "^2.1.0",
-    "react": "^16.8.1",
-    "react-dom": "^16.8.1",
     "recursive-readdir": "^2.2.2",
     "which-module": "^2.0.0"
   },
   "devDependencies": {},
+  "peerDependencies": {
+    "react": "^16.8.1",
+    "react-dom": "^16.8.1"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/estrattonbailey/fab.js.git"
+    "url": "https://github.com/estrattonbailey/biti.git"
   },
   "bugs": {
-    "url": "https://github.com/estrattonbailey/fab.js/issues"
+    "url": "https://github.com/estrattonbailey/biti/issues"
   },
-  "homepage": "https://github.com/estrattonbailey/fab.js"
+  "homepage": "https://github.com/estrattonbailey/biti"
 }

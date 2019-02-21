@@ -12,11 +12,11 @@ const cwd = process.cwd()
 
 const prog = require('commander')
   .version(pkg.version)
-  .option('-c, --config <config>', 'path to config file, default: fab.config.js')
+  .option('-c, --config <config>', 'path to config file, default: biti.config.js')
   .parse(process.argv)
 
 const { mod: config } = req(
-  path.resolve(cwd, (prog.config || './fab.config.js'))
+  path.resolve(cwd, (prog.config || './biti.config.js'))
 )
 
 require('./lib/env.js')(config)
@@ -24,7 +24,7 @@ require('./lib/env.js')(config)
 const watch = require('./lib/watch.js')
 const render = require('./lib/render.js')
 
-const log = require('./lib/logger.js')('fab')
+const log = require('./lib/logger.js')('biti')
 
 prog
   .command('render <src> <dest>')
