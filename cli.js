@@ -27,14 +27,18 @@ const render = require('./lib/render.js')
 const log = require('./lib/logger.js')('fab')
 
 prog
-  .command('build <src> <dest>')
+  .command('render <src> <dest>')
   .action((src, dest) => {
-    log.info('building', `${src} to ${dest}`)
+    let time = Date.now()
 
-    render(
-      path.join(cwd, src),
-      path.join(cwd, dest)
-    )
+    log.info('rendering', `${src} to ${dest}`)
+
+    render(path.join(cwd, src), path.join(cwd, dest), null, (e, pathname) => {
+      if (e) return log.error(e.message)
+      log.info(`rendered`, pathname)
+    }).then(() => {
+      log.info(`render`, `complete in ${((Date.now() - time) / 1000).toFixed(2)}s`)
+    })
   })
 
 prog
@@ -50,7 +54,10 @@ prog
 
     watch(_src)
       .on('change', pages => {
-        render(_src, _dest, pages)
+        render(_src, _dest, pages, (e, pathname) => {
+          if (e) return log.error(e.message)
+          log.info(`rendered`, pathname)
+        })
       })
   })
 
