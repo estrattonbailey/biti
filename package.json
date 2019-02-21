@@ -1,10 +1,9 @@
 {
   "name": "biti",
   "version": "1.0.0-4",
-  "description": "The React static site generator",
+  "description": "The tiny yet powerful React static site generator.",
   "author": "estrattonbailey",
   "license": "MIT",
-  "scripts": {},
   "main": "index.js",
   "bin": {
     "biti": "cli.js"
