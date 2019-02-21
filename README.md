@@ -25,9 +25,13 @@ export const path = '' // route name
 
 export const state = { title: 'My Home Page' }
 
-export async function load () {
+export async function config () {
   const page = await getHomePage()
-  return { description: page.description }
+  return {
+    state: {
+      description: page.description
+    }
+  }
 }
 
 export function view (props) {
@@ -50,7 +54,7 @@ biti watch pages/ static/
 ```
 
 ### Pagination
-If the exported load function (which is optional) returns an array, it will
+If the exported `config` function (which is optional) returns an array, it will
 assume it is an array of page configs. The below will output a page to `static/`
 for every valid page config in the returned array.
 ```javascript
@@ -59,7 +63,7 @@ for every valid page config in the returned array.
 import React from 'react'
 import Nav from '@/components/Nav.js' // @ points to cwd
 
-export async function load () {
+export async function config () {
   const pages = await getAllPages()
   return pages.map(page => ({
     path: page.slug,
