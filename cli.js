@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 const write = require('log-update')
 const exit = require('exit')
@@ -15,50 +15,50 @@ const prog = require('commander')
   .option('-c, --config <config>', 'path to config file, default: biti.config.js')
   .parse(process.argv)
 
-const { mod: config } = req(
-  path.resolve(cwd, (prog.config || './biti.config.js'))
-)
+const configfile = path.resolve(cwd, (prog.config || './biti.config.js'))
+const config = fs.existsSync(configfile) ? require(configfile) : {}
 
-require('./lib/env.js')(config)
-
-const watch = require('./lib/watch.js')
-const render = require('./lib/render.js')
+const biti = require('./index.js')
 
 const log = require('./lib/logger.js')('biti')
 
 prog
   .command('render <src> <dest>')
   .action((src, dest) => {
+    src = path.resolve(cwd, src)
+    dest = path.resolve(cwd, dest)
+
     let time = Date.now()
 
-    log.info('rendering', `${src} to ${dest}`)
+    log.info('rendering')
 
-    render(path.join(cwd, src), path.join(cwd, dest), null, (e, pathname) => {
-      if (e) return log.error(e.message)
-      log.info(`rendered`, pathname)
-    }).then(() => {
+    const app = biti(config)
+
+    app.on('render', p => log.info(`rendered`, p))
+    app.on('error', e => log.error(e.message || e))
+    app.on('done', e => {
       log.info(`render`, `complete in ${((Date.now() - time) / 1000).toFixed(2)}s`)
     })
+
+    app.render(src, dest)
   })
 
 prog
   .command('watch <src> <dest>')
   .action(async (src, dest) => {
-    const _src = path.join(cwd, src)
-    const _dest = path.join(cwd, dest)
+    src = path.resolve(cwd, src)
+    dest = path.resolve(cwd, dest)
 
-    // initial render
-    await render(_src, _dest)
+    const app = biti(config)
 
-    log.info('watching', src)
+    app.on('render', p => log.info(`rendered`, p))
+    app.on('error', e => log.error(e.message || e))
 
-    watch(_src)
-      .on('change', pages => {
-        render(_src, _dest, pages, (e, pathname) => {
-          if (e) return log.error(e.message)
-          log.info(`rendered`, pathname)
-        })
-      })
+    await app.render(src, dest)
+
+    log.info(log.colors.green('watching'), src.replace(cwd, ''))
+
+    app.watch(src, dest)
   })
 
 if (!process.argv.slice(2).length) {
