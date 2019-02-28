@@ -5,6 +5,10 @@ const render = require('./lib/render.js')
 
 const cwd = process.cwd()
 
+function abs (p) {
+  return path.join(cwd, p.replace(cwd, ''))
+}
+
 module.exports = function biti ({
   env,
   alias,
@@ -28,20 +32,22 @@ module.exports = function biti ({
   return {
     on,
     render (src, dest) {
+      console.log(cwd, src)
       return render(
-        path.resolve(cwd, src),
-        path.resolve(cwd, dest),
+        abs(src),
+        abs(dest),
         null,
         { filter, wrap, html },
         emit
       ).then(() => emit('done'))
     },
     watch (src, dest) {
-      watch(path.resolve(cwd, src))
+      console.log(abs(src))
+      watch(abs(src))
         .on('change', pages => {
           render(
-            path.resolve(cwd, src),
-            path.resolve(cwd, dest),
+            abs(src),
+            abs(dest),
             pages,
             { filter, wrap, html },
             emit
