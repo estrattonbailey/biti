@@ -19,7 +19,7 @@ module.exports = function biti ({
   filter,
   wrap,
   html
-}) {
+} = {}) {
   require('./lib/env.js')({ env, alias })
 
   const tmp = path.join(__dirname, 'tmp')
@@ -62,6 +62,10 @@ module.exports = function biti ({
       })
     },
     async watch (src, dest) {
+      onExit(() => {
+        fs.removeSync(tmp)
+      })
+
       await this.render(src, dest)
 
       let compiler
@@ -118,10 +122,6 @@ module.exports = function biti ({
           }
         })
       }
-
-      onExit(() => {
-        fs.removeSync(tmp)
-      })
 
       createCompiler()
 
