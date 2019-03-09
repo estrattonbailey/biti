@@ -128,8 +128,7 @@ module.exports = function biti ({
           },
           env,
           alias,
-          node: true,
-          poll: 100
+          node: true
         }))).watch((e, stats) => {
           if (e) emit('error', e)
 
