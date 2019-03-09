@@ -23,60 +23,99 @@ module.exports = function biti ({
 } = {}) {
   require('./lib/env.js')({ env, alias })
 
+  let quiet = false
   const tmp = path.join(cwd, '.biti')
   const events = {}
 
-  function emit (ev, data) {
-    return (events[ev] || []).map(fn => fn(data))
+  function emit (ev, ...data) {
+    if (quiet) return
+    return (events[ev] || []).map(fn => fn(...data))
   }
 
   function on (ev, fn) {
-    events[ev] = events[ev] ? events[ev].concat(fn) : [ fn ]
+    events[ev] = (events[ev] || []).concat(fn)
     return () => events[ev].slice(events[ev].indexOf(fn), 1)
+  }
+
+  function getCompiledFiles (stats) {
+    return  stats
+      .reduce((pages, stats) => {
+        return pages.concat(
+          stats.assets
+            .filter(asset => !/\.map$/.test(asset.name))
+            .map(asset => asset.name)
+        )
+      }, [])
+      .map(page => path.join(tmp, page))
   }
 
   return {
     on,
     async render (src, dest) {
-      try {
-        await spitball({
-          in: path.join(src, '*.js'),
-          out: {
-            path: tmp,
-            libraryTarget: 'commonjs2'
-          },
-          env,
-          alias,
-          node: true
-        }).build()
-      } catch (e) {
-        emit('error', e)
-      }
-
-      return render(
-        tmp,
-        abs(dest),
-        null,
-        { filter, wrap, html },
-        emit
-      ).then(() => {
-        fs.removeSync(tmp, e => {
-          if (e) emit('error', e)
-        })
-        emit('done')
-        return
+      return spitball({
+        in: path.join(src, '*.js'),
+        out: {
+          path: tmp,
+          libraryTarget: 'commonjs2'
+        },
+        env,
+        alias,
+        node: true
       })
+        .build()
+        .then(stats => {
+          const pages = getCompiledFiles(stats)
+
+          return render(
+            tmp,
+            abs(dest),
+            pages,
+            { filter, wrap, html },
+            emit
+          ).then(() => {
+            fs.removeSync(tmp, e => {
+              if (e) emit('error', e)
+            })
+            emit('done')
+          })
+        })
     },
     async watch (src, dest) {
+      quiet = true
+
       onExit(() => {
         fs.removeSync(tmp)
       })
 
       await this.render(src, dest)
 
+      quiet = false
+
       let compiler
-      let watcher
-      let renderers = new Map()
+      let restarting = false
+
+      const watcher = watch(src, {
+        ignoreInitial: true
+      })
+        .on('all', async (ev, page) => {
+          if (!/unlink|add/.test(ev)) return
+
+          restarting = true
+
+          const filename = path.basename(page, '.js')
+          const removed = ledger.removeFile(filename, { cwd: abs(dest) })
+
+          fs.removeSync(path.join(tmp, filename + '.js'))
+          fs.removeSync(path.join(tmp, filename + '.js.map'))
+
+          emit('remove', removed)
+
+          await compiler.close()
+
+          restarting = false
+
+          createCompiler()
+        })
 
       function createCompiler () {
         const pages = match.sync(abs(`${src}/*.js`))
@@ -89,61 +128,22 @@ module.exports = function biti ({
           },
           env,
           alias,
-          node: true
+          node: true,
+          poll: 100
         }))).watch((e, stats) => {
           if (e) emit('error', e)
 
-          if (!watcher) {
-            /**
-             * we're watching both dest and src dirs here
-             * need to filter results below
-             */
-            watcher = watch([ tmp, src ], {
-              ignored: [
-                /chunk-(?:[a-z]|[0-9])+\.js$/,
-                /\.map$/
-              ],
-              ignoreInitial: true
-            })
-              .on('unlink', page => {
-                // ignore deletions from dest
-                if (page.indexOf(src) < 0) return
+          if (restarting) return
 
-                const filename = path.basename(page, '.js')
-                const pages = ledger[filename]
+          const pages = getCompiledFiles(stats)
 
-                if (pages && pages.length) {
-                  pages.map(file => fs.removeSync(file))
-                }
-              })
-              .on('add', async page => {
-                // only add pages added to src
-                if (page.indexOf(src) < 0) return
-
-                emit('add', page)
-
-                await compiler.close()
-                createCompiler()
-              })
-              .on('change', page => {
-                // don't render un-compiled pages
-                if (page.indexOf(tmp) < 0) return
-
-                if (renderers.has(page)) return
-
-                renderers.set(page, (function (p) {
-                  render(
-                    tmp,
-                    abs(dest),
-                    [ p ],
-                    { filter, wrap, html },
-                    emit
-                  ).then(() => {
-                    renderers.delete(p)
-                  })
-                })(page))
-              })
-          }
+          render(
+            tmp,
+            abs(dest),
+            pages,
+            { filter, wrap, html },
+            emit
+          )
         })
       }
 
