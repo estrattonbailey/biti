@@ -6,6 +6,7 @@ const match = require('matched')
 const spitball = require('spitball')
 
 const render = require('./lib/render.js')
+const ledger = require('./lib/fileLedger.js')
 
 const cwd = process.cwd()
 
@@ -22,7 +23,7 @@ module.exports = function biti ({
 } = {}) {
   require('./lib/env.js')({ env, alias })
 
-  const tmp = path.join(__dirname, 'tmp')
+  const tmp = path.join(__dirname, '__tmp')
   const events = {}
 
   function emit (ev, data) {
@@ -40,7 +41,10 @@ module.exports = function biti ({
       try {
         await spitball({
           in: path.join(src, '*.js'),
-          out: tmp,
+          out: {
+            path: tmp,
+            libraryTarget: 'commonjs2'
+          },
           env,
           alias,
           node: true
@@ -56,7 +60,9 @@ module.exports = function biti ({
         { filter, wrap, html },
         emit
       ).then(() => {
-        fs.removeSync(tmp)
+        fs.removeSync(tmp, e => {
+          if (e) emit('error', e)
+        })
         emit('done')
         return
       })
@@ -73,11 +79,14 @@ module.exports = function biti ({
       let renderers = new Map()
 
       function createCompiler () {
-        const pages = match.sync(path.join(src, '*.js'))
+        const pages = match.sync(abs(`${src}/*.js`))
 
         compiler = spitball(pages.map(page => ({
           in: page,
-          out: tmp,
+          out: {
+            path: tmp,
+            libraryTarget: 'commonjs2'
+          },
           env,
           alias,
           node: true
@@ -85,6 +94,10 @@ module.exports = function biti ({
           if (e) emit('error', e)
 
           if (!watcher) {
+            /**
+             * we're watching both dest and src dirs here
+             * need to filter results below
+             */
             watcher = watch([ tmp, src ], {
               ignored: [
                 /chunk-(?:[a-z]|[0-9])+\.js$/,
@@ -92,6 +105,17 @@ module.exports = function biti ({
               ],
               ignoreInitial: true
             })
+              .on('unlink', page => {
+                // ignore deletions from dest
+                if (page.indexOf(src) < 0) return
+
+                const filename = path.basename(page, '.js')
+                const pages = ledger[filename]
+
+                if (pages && pages.length) {
+                  pages.map(file => fs.removeSync(file))
+                }
+              })
               .on('add', async page => {
                 // only add pages added to src
                 if (page.indexOf(src) < 0) return
