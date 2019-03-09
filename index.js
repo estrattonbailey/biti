@@ -53,7 +53,7 @@ module.exports = function biti ({
     on,
     async render (src, dest) {
       return spitball({
-        in: path.join(src, '*.js'),
+        in: /\.js$/.test(src) ? src : path.join(src, '*.js'),
         out: {
           path: tmp,
           libraryTarget: 'commonjs2'
@@ -67,20 +67,20 @@ module.exports = function biti ({
           const pages = getCompiledFiles(stats)
 
           return render(
-            tmp,
-            abs(dest),
             pages,
+            abs(dest),
             { filter, wrap, html },
             emit
           ).then(() => {
             fs.removeSync(tmp, e => {
               if (e) emit('error', e)
             })
-            emit('done')
           })
         })
     },
     async watch (src, dest) {
+      src = /\.js$/.test(src) ? src : path.join(src, '*.js'),
+
       quiet = true
 
       onExit(() => {
@@ -118,7 +118,7 @@ module.exports = function biti ({
         })
 
       function createCompiler () {
-        const pages = match.sync(abs(`${src}/*.js`))
+        const pages = match.sync(abs(src))
 
         compiler = spitball(pages.map(page => ({
           in: page,
@@ -137,9 +137,8 @@ module.exports = function biti ({
           const pages = getCompiledFiles(stats)
 
           render(
-            tmp,
-            abs(dest),
             pages,
+            abs(dest),
             { filter, wrap, html },
             emit
           )

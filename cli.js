@@ -25,9 +25,6 @@ const log = require('./lib/logger.js')('biti')
 prog
   .command('render <src> <dest>')
   .action((src, dest) => {
-    src = path.resolve(cwd, src)
-    dest = path.resolve(cwd, dest)
-
     let time = Date.now()
 
     log.info('rendering')
@@ -36,28 +33,21 @@ prog
 
     app.on('render', p => log.info(`rendered`, p))
     app.on('error', e => log.error(e.message || e))
-    app.on('done', e => {
+    app.on('rendered', e => {
       log.info(`render`, `complete in ${((Date.now() - time) / 1000).toFixed(2)}s`)
     })
-
     app.render(src, dest)
   })
 
 prog
   .command('watch <src> <dest>')
-  .action(async (src, dest) => {
-    src = path.resolve(cwd, src)
-    dest = path.resolve(cwd, dest)
-
+  .action((src, dest) => {
     const app = biti(config)
+
+    log.info(log.colors.green('watching'), src)
 
     app.on('render', p => log.info(`rendered`, p))
     app.on('error', e => log.error(e.message || e))
-
-    await app.render(src, dest)
-
-    log.info(log.colors.green('watching'), src.replace(cwd, ''))
-
     app.watch(src, dest)
   })
 
