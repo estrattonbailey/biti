@@ -22,7 +22,7 @@
     "react": "^16.8.1",
     "react-dom": "^16.8.1",
     "recursive-readdir": "^2.2.2",
-    "spitball": "0.0.6"
+    "spitball": "0.0.8"
   },
   "devDependencies": {},
   "repository": {

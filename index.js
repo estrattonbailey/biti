@@ -23,7 +23,7 @@ module.exports = function biti ({
 } = {}) {
   require('./lib/env.js')({ env, alias })
 
-  const tmp = path.join(__dirname, '__tmp')
+  const tmp = path.join(cwd, '.biti')
   const events = {}
 
   function emit (ev, data) {
