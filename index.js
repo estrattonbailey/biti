@@ -94,7 +94,7 @@ module.exports = function biti ({
       let compiler
       let restarting = false
 
-      const watcher = watch(src, {
+      const watcher = watch(abs(src), {
         ignoreInitial: true
       })
         .on('all', async (ev, page) => {
