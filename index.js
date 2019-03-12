@@ -7,6 +7,7 @@ const spitball = require('spitball')
 
 const render = require('./lib/render.js')
 const ledger = require('./lib/fileLedger.js')
+const { on, emit } = require('./lib/emitter.js')
 
 const cwd = process.cwd()
 
@@ -23,19 +24,7 @@ module.exports = function biti ({
 } = {}) {
   require('./lib/env.js')({ env, alias })
 
-  let quiet = false
   const tmp = path.join(cwd, '.biti')
-  const events = {}
-
-  function emit (ev, ...data) {
-    if (quiet) return
-    return (events[ev] || []).map(fn => fn(...data))
-  }
-
-  function on (ev, fn) {
-    events[ev] = (events[ev] || []).concat(fn)
-    return () => events[ev].slice(events[ev].indexOf(fn), 1)
-  }
 
   function getCompiledFiles (stats) {
     return  stats
@@ -69,27 +58,23 @@ module.exports = function biti ({
           return render(
             pages,
             abs(dest),
-            { filter, wrap, html },
-            emit
+            { filter, wrap, html }
           ).then(() => {
-            fs.removeSync(tmp, e => {
-              if (e) emit('error', e)
-            })
+            fs.removeSync(tmp)
           })
+        })
+        .catch(e => {
+          emit('error', e)
         })
     },
     async watch (src, dest) {
       src = /\.js$/.test(src) ? src : path.join(src, '*.js'),
-
-      quiet = true
 
       onExit(() => {
         fs.removeSync(tmp)
       })
 
       await this.render(src, dest)
-
-      quiet = false
 
       let compiler
       let restarting = false
@@ -130,7 +115,7 @@ module.exports = function biti ({
           alias,
           node: true
         }))).watch((e, stats) => {
-          if (e) emit('error', e)
+          if (e) return emit('error', e)
 
           if (restarting) return
 
