@@ -87,13 +87,13 @@ module.exports = function biti ({
 
           restarting = true
 
-          const filename = path.basename(page, '.js')
-          const removed = ledger.removeFile(filename, { cwd: abs(dest) })
+          if (/unlink/.test(ev)) {
+            const filename = path.basename(page, '.js')
+            const removed = ledger.removeFile(filename, { cwd: abs(dest) })
 
-          fs.removeSync(path.join(tmp, filename + '.js'))
-          fs.removeSync(path.join(tmp, filename + '.js.map'))
-
-          emit('remove', removed)
+            fs.removeSync(path.join(tmp, filename + '.js'))
+            fs.removeSync(path.join(tmp, filename + '.js.map'))
+          }
 
           await compiler.close()
 
@@ -124,8 +124,7 @@ module.exports = function biti ({
           render(
             pages,
             abs(dest),
-            { filter, wrap, html },
-            emit
+            { filter, wrap, html }
           )
         })
       }

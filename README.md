@@ -1,12 +1,25 @@
-# biti
-The tiny yet powerful React static site generator.
-
-## Install
-`biti` can be installed globally and used via the CLI, or locally and used via npm
-scripts or the Node API.
+![repo banner](https://user-images.githubusercontent.com/4732330/54318360-74f6a480-45bc-11e9-8d5c-20c99e6a586b.png)
 
 ```bash
 npm i biti -g
+```
+
+<br />
+<br />
+
+> 👀 Looking for a static page generation *plus* a client-side app? Try 👉 [hypr](https://github.com/estrattonbailey/hypr) :)
+
+<br />
+
+## Features
+- easy static page generation
+- intelligent file watching
+- convenient CLI
+- easy Node API
+
+## Usage
+```bash
+biti watch pages/ static/
 ```
 
 ## Getting started
@@ -21,6 +34,8 @@ Each page requires the following exports:
 - `pathname` - string - the path where you'd like the page to appear
 - `view` - function - a function that returns a React component
 
+The pathname property will be passed to the `view` component.
+
 An simple page might look like this:
 
 ```javascript
@@ -28,7 +43,7 @@ import React from 'react'
 
 export const pathname = '/about'
 
-export function view () {
+export function view ({ pathname }) {
   return (
     <>
       <h1>About Us</h1>
@@ -39,7 +54,7 @@ export function view () {
 ```
 
 #### Static data
-Pages can also export a `props` object, which will be passed to the `view`
+Pages can also export a `state` object, which will also be passed to the `view`
 function when rendering.
 
 ```javascript
@@ -47,16 +62,16 @@ import React from 'react'
 
 export const pathname = '/about'
 
-export const props = {
+export const state = {
   title: 'About Us',
   description: '...'
 }
 
-export function view (props) {
+export function view ({ state, pathname }) {
   return (
     <>
-      <h1>{props.title}</h1>
-      <p>{props.description}</p>
+      <h1>{state.title}</h1>
+      <p>{state.description}</p>
     </>
   )
 }
@@ -75,7 +90,7 @@ import { getAboutPage } from './lib/api.js'
 
 export const pathname = '/about'
 
-export const props = {
+export const state = {
   title: 'About Us',
   team: [
     'Eric'
@@ -86,21 +101,21 @@ export function config () {
   return getAboutPage()
     .then(res => {
       return {
-        props: {
+        state: {
           team: res.team
         }
       }
     })
 }
 
-export function view (props) {
+export function view ({ state, pathname }) {
   return (
     <>
-      <h1>{props.title}</h1>
+      <h1>{state.title}</h1>
 
       <h2>Team</h2>
 
-      {props.team.map(name => (
+      {state.team.map(name => (
         <p key={name}>{name}</p>
       ))}
     </>
@@ -125,7 +140,7 @@ export function config () {
     .then(posts => {
       return posts.map(post => ({
         pathname: `/posts/${post.slug}`,
-        props: {
+        state: {
           title: post.title,
           content: post.content
         }
@@ -133,50 +148,18 @@ export function config () {
     })
 }
 
-export function view (props) {
+export function view ({ state, pathname }) {
   return (
     <>
-      <h1>{props.title}</h1>
+      <h1>{state.title}</h1>
 
       <article>
-        {props.content}
+        {state.content}
       </article>
     </>
   )
 }
 ```
-
-#### Pathname nesting
-As we've seen above, `pathname`s can be defined statically, or dynamically. They
-can also be defined using the actual file structure of the `/pages` directory.
-
-Let's say we have the following directory structure:
-
-```bash
-pages/
-  - Home.js
-  - posts/
-    - Post.js
-```
-
-The pathname(s) defined in `/pages/posts/Post.js` will be joined to the name
-of the directory, `posts`:
-
-```javascript
-import React from 'react'
-
-export const pathname = 'my-post'
-
-export function view () {
-  return (
-    <>
-      ...
-    </>
-  )
-}
-```
-
-The resulting page will be rendered as `/posts/my-post` 👍
 
 ## Configuration
 `biti` supports minimal configuration, and otherwise falls back to smart
@@ -184,12 +167,11 @@ defaults. To define a config for all rendering tasks, you can create a
 `biti.config.js` file.
 
 `biti` supports the following properties on the config file:
-- `env` - object - properties on this object will be attached to `process.env`
-  for use globally throughout your pages and components
-- `alias` - object - module aliases
+- `env` - object - properties on this object will be attached to `process.env`,
+  as well as defined *globally* within the compilation.
+- `alias` - object - module import aliases
 
 Example:
-
 ```javascript
 module.exports = {
   env: {
@@ -224,15 +206,15 @@ For example:
 biti render /pages /static
 ```
 
-#### Watching
-A very cool feature of `biti` is the smart file watcher. Instead of re-rendering
-the whole `/pages` directory on any file change, `biti` smartly traverses the
-file tree, so that when a given file updates, **only the pages that depend on
-that file update**.
+These commands also accept globs as the `src` property, allowing you to specify
+individual pages or directories.
 
-This also means that the `config` function (if present) will only fire for the
-pages that were affected by a file update. All together, it means that the
-development process is much faster 🔥
+```bash
+biti render /pages/about-us.js /static
+biti render /pages/*.js /static
+biti render /pages/marketing-site/*.js /static
+biti render /pages/**/*.js /static
+```
 
 ## API
 Using `biti` programmatically is virtually the same as using the CLI, only
@@ -252,34 +234,42 @@ const app = biti(config)
 Both `render` and `watch` have the following signature:
 
 ```javascript
-app.render(src, dest[, callback])
+app.render(src, dest)
 ```
 
 #### render
-Renders all pages from `src` `dest`, calling the callback on each render or
-error. Returns a `Promise`
+Renders all pages from `src` `dest`.
 
 ```javascript
-app
-  .render('/src', '/static', (e, pathname) => {
-    if (e) return console.error(e)
-    console.log(`rendering ${pathname}`)
-  })
-  .then(() => {
-    console.log('rendering complete')
-  })
+app.render('/src', '/static')
 ```
 
 #### watch
-Watches all pages in `src` and renders to `dest` on file change, calling the
-callback on each render or error.
+Watches all pages in `src` and renders to `dest` on file change.
 
 ```javascript
-app
-  .watch('/src', '/static', (e, pathname) => {
-    if (e) return console.error(e)
-    console.log(`rendering ${pathname}`)
-  })
+app.watch('/src', '/static')
+```
+
+### API Events
+A `biti` instance emits a few helpful events as well.
+
+#### render
+After rendering a single page.
+```javascript
+app.on('render', page => {})
+```
+
+#### rendered
+After rendering all pages. On watch this is called after every change has been
+compiled and rendered.
+```javascript
+app.on('rendered', pages => {})
+```
+
+#### error
+```javascript
+app.on('error', error => {})
 ```
 
 ## License
