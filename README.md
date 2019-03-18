@@ -7,7 +7,7 @@ npm i biti -g
 <br />
 <br />
 
-> 👀 Looking for a static page generation *plus* a client-side app? Try 👉 [hypr](https://github.com/estrattonbailey/hypr) :)
+> ⚠️ this repo is deprecated in favor of [@rola/static](https://github.com/estrattonbailey/rola/tree/master/packages/static) and the [rola](https://github.com/estrattonbailey/rola) project.
 
 <br />
 
